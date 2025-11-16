@@ -36,8 +36,14 @@ namespace TaskbarSystemMonitor
                 {
                     if (key != null)
                     {
+                        // Use AppContext.BaseDirectory for single-file apps compatibility
                         string exePath = Assembly.GetExecutingAssembly().Location;
-                        if (exePath.EndsWith(".dll"))
+                        if (string.IsNullOrEmpty(exePath))
+                        {
+                            // Single-file app - use the current executable path
+                            exePath = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "TaskbarSystemMonitor.exe");
+                        }
+                        else if (exePath.EndsWith(".dll"))
                         {
                             // For .NET Core/5+ apps, we need to use the executable
                             exePath = Path.ChangeExtension(exePath, ".exe");
