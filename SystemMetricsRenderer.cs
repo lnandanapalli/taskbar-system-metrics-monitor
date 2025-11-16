@@ -54,6 +54,7 @@ namespace TaskbarSystemMonitor
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
             var currentMetrics = _historyData.Last();
+            var settings = Settings.Instance;
 
             // Draw background
             using (var backgroundBrush = new SolidBrush(_backgroundColor))
@@ -61,16 +62,40 @@ namespace TaskbarSystemMonitor
                 g.FillRectangle(backgroundBrush, 0, 0, _form.Width, _form.Height);
             }
 
-            // Calculate layout
-            int totalWidth = _form.Width - (MARGIN * 2);
+            // Calculate layout - only count visible metrics
             int yPos = MARGIN;
+            int xPos = 0;
 
-            // Draw each metric
-            DrawMetric(g, "CPU", currentMetrics.CpuUsage, _cpuColor, 0, yPos, METRIC_WIDTH);
-            DrawMetric(g, "RAM", currentMetrics.RamUsage, _ramColor, METRIC_WIDTH, yPos, METRIC_WIDTH);
-            DrawMetric(g, "DISK", GetDiskUsage(currentMetrics), _diskColor, METRIC_WIDTH * 2, yPos, METRIC_WIDTH);
-            DrawMetric(g, "NET", GetNetworkUsage(currentMetrics), _networkColor, METRIC_WIDTH * 3, yPos, METRIC_WIDTH);
-            DrawMetric(g, "GPU", currentMetrics.GpuUsage, _gpuColor, METRIC_WIDTH * 4, yPos, METRIC_WIDTH);
+            // Draw each metric if enabled
+            if (settings.ShowCpu)
+            {
+                DrawMetric(g, "CPU", currentMetrics.CpuUsage, _cpuColor, xPos, yPos, METRIC_WIDTH);
+                xPos += METRIC_WIDTH;
+            }
+
+            if (settings.ShowRam)
+            {
+                DrawMetric(g, "RAM", currentMetrics.RamUsage, _ramColor, xPos, yPos, METRIC_WIDTH);
+                xPos += METRIC_WIDTH;
+            }
+
+            if (settings.ShowDisk)
+            {
+                DrawMetric(g, "DISK", GetDiskUsage(currentMetrics), _diskColor, xPos, yPos, METRIC_WIDTH);
+                xPos += METRIC_WIDTH;
+            }
+
+            if (settings.ShowNetwork)
+            {
+                DrawMetric(g, "NET", GetNetworkUsage(currentMetrics), _networkColor, xPos, yPos, METRIC_WIDTH);
+                xPos += METRIC_WIDTH;
+            }
+
+            if (settings.ShowGpu)
+            {
+                DrawMetric(g, "GPU", currentMetrics.GpuUsage, _gpuColor, xPos, yPos, METRIC_WIDTH);
+                xPos += METRIC_WIDTH;
+            }
         }
 
         private void DrawMetric(Graphics g, string label, float value, Color color, int x, int y, int width)

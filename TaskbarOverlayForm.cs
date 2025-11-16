@@ -100,8 +100,8 @@ namespace TaskbarSystemMonitor
             int exStyle = GetWindowLong(this.Handle, GWL_EXSTYLE);
             SetWindowLong(this.Handle, GWL_EXSTYLE, exStyle | WS_EX_LAYERED | WS_EX_TOOLWINDOW);
 
-            // Set transparency (0 = fully transparent, 255 = fully opaque)
-            SetLayeredWindowAttributes(this.Handle, 0, 220, 0x2);
+            // Set transparency from settings
+            ApplyOpacitySetting();
 
             // Load saved position or use default
             LoadSavedPosition();
@@ -123,6 +123,32 @@ namespace TaskbarSystemMonitor
                 SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
             };
             _positionTimer.Start();
+
+            // Subscribe to settings changes
+            Settings.Instance.SettingsChanged += OnSettingsChanged;
+        }
+
+        private void ApplyOpacitySetting()
+        {
+            var settings = Settings.Instance;
+            // Convert opacity percentage (0-100) to byte value (0-255)
+            byte opacity = (byte)(settings.Opacity * 255 / 100);
+            SetLayeredWindowAttributes(this.Handle, 0, opacity, 0x2);
+        }
+
+        private void OnSettingsChanged()
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(OnSettingsChanged));
+                return;
+            }
+
+            // Apply new opacity
+            ApplyOpacitySetting();
+
+            // Trigger redraw to update visible metrics
+            this.Invalidate();
         }
         private void PositionOnTaskbar()
         {

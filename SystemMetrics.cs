@@ -18,7 +18,7 @@ namespace TaskbarSystemMonitor
         private readonly List<PerformanceCounter> _gpuCounters;
 
         private readonly long _totalRam;
-        private readonly System.Threading.Timer _updateTimer;
+        private System.Threading.Timer _updateTimer;
 
         public event Action<SystemMetricsData>? MetricsUpdated;
 
@@ -52,8 +52,19 @@ namespace TaskbarSystemMonitor
             // Initialize GPU counters
             _gpuCounters = InitializeGpuCounters();
 
-            // Start update timer with slightly longer interval for smoother updates
-            _updateTimer = new System.Threading.Timer(UpdateMetrics, null, 0, 1500); // Update every 1.5 seconds
+            // Start update timer with interval from settings
+            var settings = Settings.Instance;
+            _updateTimer = new System.Threading.Timer(UpdateMetrics, null, 0, settings.UpdateInterval);
+
+            // Subscribe to settings changes
+            settings.SettingsChanged += OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged()
+        {
+            // Update timer interval when settings change
+            var settings = Settings.Instance;
+            _updateTimer?.Change(0, settings.UpdateInterval);
         }
 
         private void UpdateMetrics(object? state)

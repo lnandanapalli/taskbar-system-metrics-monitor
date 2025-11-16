@@ -189,6 +189,15 @@ namespace TaskbarSystemMonitor
         private void LoadSettings()
         {
             chkStartWithWindows.Checked = StartupManager.IsStartupEnabled();
+
+            var settings = Settings.Instance;
+            chkShowCpu.Checked = settings.ShowCpu;
+            chkShowRam.Checked = settings.ShowRam;
+            chkShowDisk.Checked = settings.ShowDisk;
+            chkShowNetwork.Checked = settings.ShowNetwork;
+            chkShowGpu.Checked = settings.ShowGpu;
+            numUpdateInterval.Value = settings.UpdateInterval;
+            numOpacity.Value = settings.Opacity;
         }
 
         private void BtnOk_Click(object? sender, EventArgs e)
@@ -208,8 +217,17 @@ namespace TaskbarSystemMonitor
                 StartupManager.DisableStartup();
             }
 
-            // Other settings would be saved here
-            // For now, we'll just close the dialog
+            // Save all settings
+            var settings = Settings.Instance;
+            settings.ShowCpu = chkShowCpu.Checked;
+            settings.ShowRam = chkShowRam.Checked;
+            settings.ShowDisk = chkShowDisk.Checked;
+            settings.ShowNetwork = chkShowNetwork.Checked;
+            settings.ShowGpu = chkShowGpu.Checked;
+            settings.UpdateInterval = (int)numUpdateInterval.Value;
+            settings.Opacity = (int)numOpacity.Value;
+            settings.SaveSettings();
+
             this.DialogResult = DialogResult.OK;
         }
     }
